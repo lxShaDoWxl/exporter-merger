@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+var config *Config
 
 func NewRootCommand() *cobra.Command {
 	app := new(App)
@@ -47,19 +48,14 @@ func (app *App) Bind(cmd *cobra.Command) {
 		"config-path", "c", "",
 		"Path to the configuration file.")
 	cobra.OnInitialize(func() {
+		var err error
 		if configPath != nil && *configPath != "" {
-			config, err := ReadConfig(*configPath)
+			config, err = ReadConfig(*configPath)
 			if err != nil {
 				log.WithField("error", err).Errorf("failed to load config file '%s'", *configPath)
 				os.Exit(1)
 				return
 			}
-
-			urls := []string{}
-			for _, e := range config.Exporters {
-				urls = append(urls, e.URL)
-			}
-			app.viper.SetDefault("urls", strings.Join(urls, " "))
 		}
 	})
 
@@ -78,15 +74,11 @@ func (app *App) Bind(cmd *cobra.Command) {
 		"Include debug messages to output (ENV:MERGER_VERBOSE)")
 	app.viper.BindPFlag("verbose", cmd.PersistentFlags().Lookup("verbose"))
 
-	cmd.PersistentFlags().StringSlice(
-		"url", nil,
-		"URL to scrape. Can be speficied multiple times. (ENV:MERGER_URLS,space-seperated)")
-	app.viper.BindPFlag("urls", cmd.PersistentFlags().Lookup("url"))
 }
 
 func (app *App) run(cmd *cobra.Command, args []string) {
 	http.Handle("/metrics", Handler{
-		Exporters:            app.viper.GetStringSlice("urls"),
+		Exporters:            config.Exporters,
 		ExportersHTTPTimeout: app.viper.GetInt("exporterstimeout"),
 	})
 

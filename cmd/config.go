@@ -14,7 +14,8 @@ type Config struct {
 }
 
 type Exporter struct {
-	URL string
+	URL      string
+	LabelSet map[string]string
 }
 
 func ReadConfig(path string) (*Config, error) {

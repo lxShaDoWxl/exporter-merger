@@ -3,7 +3,6 @@ package cmd
 import (
 	"io"
 	"net/http"
-	"sort"
 	"sync"
 	"time"
 
@@ -13,7 +12,7 @@ import (
 )
 
 type Handler struct {
-	Exporters            []string
+	Exporters            []Exporter
 	ExportersHTTPTimeout int
 }
 
@@ -28,20 +27,20 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h Handler) Merge(w io.Writer) {
 	mfs := map[string]*prom.MetricFamily{}
 
-	responses := make([]map[string]*prom.MetricFamily, 1024)
-	responsesMu := sync.Mutex{}
+	mfMutex := sync.Mutex{}
 	httpClientTimeout := time.Second * time.Duration(h.ExportersHTTPTimeout)
 
 	wg := sync.WaitGroup{}
-	for _, url := range h.Exporters {
+	for _, exporter := range h.Exporters {
 		wg.Add(1)
-		go func(u string) {
+		go func(exporter Exporter) {
 			defer wg.Done()
-			log.WithField("url", u).Debug("getting remote metrics")
+			url := exporter.URL
+			log.WithField("url", url).Debug("getting remote metrics")
 			httpClient := http.Client{Timeout: httpClientTimeout}
-			resp, err := httpClient.Get(u)
+			resp, err := httpClient.Get(url)
 			if err != nil {
-				log.WithField("url", u).Errorf("HTTP connection failed: %v", err)
+				log.WithField("url", url).Errorf("HTTP connection failed: %v", err)
 				return
 			}
 			defer resp.Body.Close()
@@ -49,37 +48,26 @@ func (h Handler) Merge(w io.Writer) {
 			tp := new(expfmt.TextParser)
 			part, err := tp.TextToMetricFamilies(resp.Body)
 			if err != nil {
-				log.WithField("url", u).Errorf("Parse response body to metrics: %v", err)
+				log.WithField("url", url).Errorf("Parse response body to metrics: %v", err)
 				return
 			}
-			responsesMu.Lock()
-			responses = append(responses, part)
-			responsesMu.Unlock()
-		}(url)
+			for n, mf := range part {
+				mfo, ok := mfs[n]
+				mfMutex.Lock()
+				if ok {
+					mfo.Metric = append(mfo.Metric, mf.Metric...)
+				} else {
+					mfs[n] = mf
+				}
+				mfMutex.Unlock()
+			}
+		}(exporter)
 	}
 	wg.Wait()
 
-	for _, part := range responses {
-		for n, mf := range part {
-			mfo, ok := mfs[n]
-			if ok {
-				mfo.Metric = append(mfo.Metric, mf.Metric...)
-			} else {
-				mfs[n] = mf
-			}
-
-		}
-	}
-
-	names := []string{}
-	for n := range mfs {
-		names = append(names, n)
-	}
-	sort.Strings(names)
-
 	enc := expfmt.NewEncoder(w, expfmt.FmtText)
-	for _, n := range names {
-		err := enc.Encode(mfs[n])
+	for mf := range mfs {
+		err := enc.Encode(mfs[mf])
 		if err != nil {
 			log.Error(err)
 			return
