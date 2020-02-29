@@ -12,6 +12,7 @@ BUILD_FLAGS=-ldflags "\
 	-X '$(PACKAGE)/cmd.BuildHash=$(BUILD_HASH)' \
 	-X '$(PACKAGE)/cmd.BuildEnvironment=$(BUILD_USER)@$(BUILD_MACHINE)' \
 "
+
 test:
 	go test ./...
 
