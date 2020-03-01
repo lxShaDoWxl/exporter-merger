@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/rebuy-de/exporter-merger/cmd"
+	"github.com/6RiverSystems/exporter-merger/cmd"
 	log "github.com/sirupsen/logrus"
 )
 
