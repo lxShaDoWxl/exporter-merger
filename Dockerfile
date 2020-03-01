@@ -12,4 +12,4 @@ RUN make build
 FROM alpine
 WORKDIR /app
 COPY --from=build-env /app/exporter-merger /app/
-ENTRYPOINT ./exporter-merger
+ENTRYPOINT /app/exporter-merger
