@@ -11,5 +11,5 @@ RUN make build
 # final stage
 FROM alpine
 WORKDIR /app
-COPY --from=build-env /app/exporter-merger /app/
+COPY --from=build-env /app/exporter-merger /app/exporter-merger
 ENTRYPOINT /app/exporter-merger
