@@ -20,6 +20,11 @@ Merges Prometheus metrics from multiple sources.
 ```yaml
 exporters:
 - url: http://localhost:9100/metrics
+  addLabels:
+  - name: "job"
+    value: "someDownstreamThing"
+  - name: "anotherLabel"
+    value: "anotherLabelValue!"
 - url: http://localhost:9101/metrics
 ```
 
