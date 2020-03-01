@@ -39,8 +39,6 @@ exporter-merger --config-path merger.yaml --listen-port 8080
 Alternatively configuration can be passed via environment variables, here is relevant part of `exporter-merger -h` output:
 ```
       --listen-port int      Listen port for the HTTP server. (ENV:MERGER_PORT) (default 8080)
-      --url stringSlice      URL to scrape. Can be speficied multiple times. (ENV:MERGER_URLS,space-seperated)
-
 ```
 
 ## Kubernetes
@@ -67,9 +65,8 @@ spec:
       labels:
         app: my-nginx
       annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8080"
-
+        prometheus.io/should-be-scraped: "true"
+        prometheus.io/scrape-port: "8080"
     spec:
       containers:
       - name: "nginx"
@@ -93,21 +90,20 @@ spec:
           mountPath: /var/log/nginx/mtail
 
       - name: exporter-merger
-        image: quay.io/rebuy/exporter-merger:v0.2.0
-        ports:
-        - containerPort: 8080
-        env:
-        # space-separated list of URLs
-        - name: MERGER_URLS
-          value: http://localhost:9000/prometheus/metrics http://localhost:9397/metrics
-        # default exposed port, change only if need other than default 8080
-        # - name: MERGER_PORT
-        #   value: 8080
+        image: gcr.io/plasma-column-128721/exporter-merger:latest
+        volumeMounts:
+          - mountPath: /etc/exporter-merger/
+            name: example-exporter-merger
+            readOnly: true
+     volumes:
+       - name: example-exporter-merger
+         configMap:
+           name: example-exporter-merger
+
 ```
 
 ## Planned Features
 
 * Allow transforming of metrics from backend exporters.
   * eg add a prefix to the metric names
-  * eg add labels to the metrics
 * Allow dynamic adding of exporters.
