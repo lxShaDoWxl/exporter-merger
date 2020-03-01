@@ -1,4 +1,4 @@
-module github.com/redbuy-de/exporter-merger
+module github.com/6RiverSystems/exporter-merger
 
 go 1.14
 

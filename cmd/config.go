@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 
 	"github.com/pkg/errors"
+	prom "github.com/prometheus/client_model/go"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
@@ -14,8 +15,8 @@ type Config struct {
 }
 
 type Exporter struct {
-	URL      string
-	LabelSet map[string]string
+	URL       string            `yaml:"url"`
+	AddLabels []*prom.LabelPair `yaml:"addLabels"`
 }
 
 func ReadConfig(path string) (*Config, error) {
