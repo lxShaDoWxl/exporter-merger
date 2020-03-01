@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"sync"
@@ -52,7 +51,6 @@ func (h Handler) Merge(w io.Writer) {
 				log.WithField("url", url).Errorf("Parse response body to metrics: %v", err)
 				return
 			}
-			fmt.Println(exporter.AddLabels)
 			for n, mf := range part {
 				for i, metric := range mf.Metric {
 					mf.Metric[i].Label = append(metric.Label, exporter.AddLabels...)
