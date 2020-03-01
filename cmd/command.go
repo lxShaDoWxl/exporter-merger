@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var config *Config
+var config = &Config{}
 
 func NewRootCommand() *cobra.Command {
 	app := new(App)
@@ -45,7 +45,7 @@ func (app *App) Bind(cmd *cobra.Command) {
 	app.viper.AutomaticEnv()
 
 	configPath := cmd.PersistentFlags().StringP(
-		"config-path", "c", "",
+		"config-path", "c", "/etc/exporter-merger/config.yaml",
 		"Path to the configuration file.")
 	cobra.OnInitialize(func() {
 		var err error
