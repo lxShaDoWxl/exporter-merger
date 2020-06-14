@@ -55,8 +55,8 @@ func (h Handler) Merge(w io.Writer) {
 				for i, metric := range mf.Metric {
 					mf.Metric[i].Label = append(metric.Label, exporter.AddLabels...)
 				}
-				mfo, ok := mfs[n]
 				mfMutex.Lock()
+				mfo, ok := mfs[n]
 				if ok {
 					mfo.Metric = append(mfo.Metric, mf.Metric...)
 				} else {
