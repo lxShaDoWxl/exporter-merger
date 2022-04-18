@@ -1,4 +1,4 @@
-FROM golang:1.11-alpine AS build-env
+FROM --platform=$BUILDPLATFORM golang:alpine AS build-env
 
 RUN apk add --no-cache git make
 
@@ -13,7 +13,10 @@ RUN go get -u golang.org/x/lint/golint
 RUN go get -u github.com/golang/dep/cmd/dep
 
 ADD . /go/src/github.com/rebuy-de/exporter-merger/
-RUN cd /go/src/github.com/rebuy-de/exporter-merger/ && make vendor && CGO_ENABLED=0 make install
+WORKDIR /go/src/github.com/rebuy-de/exporter-merger
+RUN make vendor
+ARG TARGETOS TARGETARCH
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH make xcbuild
 
 # final stage
 FROM alpine

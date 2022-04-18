@@ -63,6 +63,11 @@ build: vendor
 		-o $(NAME)-$(BUILD_VERSION)-$(shell go env GOOS)-$(shell go env GOARCH)
 	ln -sf $(NAME)-$(BUILD_VERSION)-$(shell go env GOOS)-$(shell go env GOARCH) $(NAME)
 
+xcbuild: vendor
+	go build \
+		$(BUILD_FLAGS) \
+		-o /go/bin/$(NAME)
+
 xc:
 	GOOS=linux GOARCH=amd64 make build
 	GOOS=darwin GOARCH=amd64 make build
