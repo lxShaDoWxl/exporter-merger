@@ -26,4 +26,4 @@ FROM alpine
 WORKDIR /app
 COPY --from=build-env --link /go/src/github.com/rebuy-de/exporter-merger/merger.yaml /app/
 COPY --from=build-env --link /go/bin/exporter-merger /app/
-ENTRYPOINT ./exporter-merger
+CMD [ "./exporter-merger" ]
