@@ -1,8 +1,9 @@
 # exporter-merger
 
-[![Build Status](https://travis-ci.org/rebuy-de/exporter-merger.svg?branch=master)](https://travis-ci.org/rebuy-de/exporter-merger)
-[![license](https://img.shields.io/github/license/rebuy-de/exporter-merger.svg)]()
-[![GitHub release](https://img.shields.io/github/release/rebuy-de/exporter-merger.svg)]()
+[![Build Status](https://github.com/jkreileder/exporter-merger/workflows/build/badge.svg)](https://github.com/jkreileder/exporter-merger/actions?query=workflow%3Abuild)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jkreileder/exporter-merger)](https://goreportcard.com/report/github.com/jkreileder/exporter-merger)
+[![License](https://img.shields.io/github/license/jkreileder/exporter-merger.svg)](LICENSE)
+[![GitHub Release](https://img.shields.io/github/release/jkreileder/exporter-merger.svg)](https://github.com/jkreileder/exporter-merger/releases/latest)
 
 Merges Prometheus metrics from multiple sources.
 
