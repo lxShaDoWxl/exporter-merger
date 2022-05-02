@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.4.1
+
 FROM --platform=$BUILDPLATFORM golang:alpine AS build-env
 
 RUN apk add --no-cache git make
@@ -6,21 +8,22 @@ RUN apk add --no-cache git make
 ENV GOPATH /go
 ENV PATH /go/bin:$PATH
 ENV GO111MODULE=off
-RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
 
 # Install Go Tools
 RUN go get -u golang.org/x/lint/golint
 RUN go get -u github.com/golang/dep/cmd/dep
 
-ADD . /go/src/github.com/rebuy-de/exporter-merger/
 WORKDIR /go/src/github.com/rebuy-de/exporter-merger
-RUN make vendor
+COPY --link . /go/src/github.com/rebuy-de/exporter-merger/
+RUN --mount=type=cache,id=go-build,target=/root/.cache/go-build \
+    make vendor
 ARG TARGETOS TARGETARCH
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH make xcbuild
+RUN --mount=type=cache,id=go-build,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH make xcbuild
 
 # final stage
 FROM alpine
 WORKDIR /app
-COPY --from=build-env /go/src/github.com/rebuy-de/exporter-merger/merger.yaml /app/
-COPY --from=build-env /go/bin/exporter-merger /app/
+COPY --from=build-env --link /go/src/github.com/rebuy-de/exporter-merger/merger.yaml /app/
+COPY --from=build-env --link /go/bin/exporter-merger /app/
 ENTRYPOINT ./exporter-merger
