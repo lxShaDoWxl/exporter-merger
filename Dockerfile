@@ -13,8 +13,8 @@ ENV GO111MODULE=off
 RUN go get -u golang.org/x/lint/golint
 RUN go get -u github.com/golang/dep/cmd/dep
 
-WORKDIR /go/src/github.com/rebuy-de/exporter-merger
-COPY --link . /go/src/github.com/rebuy-de/exporter-merger/
+WORKDIR /go/src/github.com/jkreileder/exporter-merger
+COPY --link . /go/src/github.com/jkreileder/exporter-merger/
 RUN --mount=type=cache,id=go-build,target=/root/.cache/go-build \
     make vendor
 ARG TARGETOS TARGETARCH
@@ -24,6 +24,6 @@ RUN --mount=type=cache,id=go-build,target=/root/.cache/go-build \
 # final stage
 FROM alpine
 WORKDIR /app
-COPY --from=build-env --link /go/src/github.com/rebuy-de/exporter-merger/merger.yaml /app/
+COPY --from=build-env --link /go/src/github.com/jkreileder/exporter-merger/merger.yaml /app/
 COPY --from=build-env --link /go/bin/exporter-merger /app/
 CMD [ "./exporter-merger" ]

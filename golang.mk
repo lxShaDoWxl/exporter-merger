@@ -1,10 +1,3 @@
-# Source: https://github.com/rebuy-de/golang-template
-# Version: 1.3.1
-# Dependencies:
-# * Glide
-# * gocov (https://github.com/axw/gocov)
-# * gocov-html (https://github.com/matm/gocov-html)
-
 NAME=$(notdir $(PACKAGE))
 
 BUILD_VERSION=$(shell git describe --always --dirty --tags | tr '-' '.' )

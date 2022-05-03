@@ -97,7 +97,7 @@ spec:
           mountPath: /var/log/nginx/mtail
 
       - name: exporter-merger
-        image: quay.io/rebuy/exporter-merger:v0.2.0
+        image: quay.io/jkreileder/exporter-merger:v0.4.4
         ports:
         - containerPort: 8080
         env:

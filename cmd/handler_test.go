@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/prometheus/common/expfmt"
-	"github.com/rebuy-de/exporter-merger/cmd"
+	"github.com/jkreileder/exporter-merger/cmd"
 	log "github.com/sirupsen/logrus"
 )
 
