@@ -5,6 +5,14 @@
 [![License](https://img.shields.io/github/license/jkreileder/exporter-merger.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/release/jkreileder/exporter-merger.svg)](https://github.com/jkreileder/exporter-merger/releases/latest)
 
+Images are available on:
+
+* [Docker registry](https://hub.docker.com/r/jkreileder/exporter-merger)
+* [Quay container regsitry](https://quay.io/repository/jkreileder/exporter-merger)
+* [GitHub container regsitry](https://github.com/jkreileder/exporter-merger/pkgs/container/exporter-merger)
+
+---
+
 Merges Prometheus metrics from multiple sources.
 
 > **Development Status** *exporter-merger* is in an early development phase.
