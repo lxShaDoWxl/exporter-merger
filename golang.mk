@@ -6,12 +6,7 @@ BUILD_HASH=$(shell git rev-parse HEAD)
 BUILD_MACHINE=$(shell echo $$HOSTNAME)
 BUILD_USER=$(shell whoami)
 
-BUILD_FLAGS=-ldflags "\
-	-X '$(PACKAGE)/cmd.BuildVersion=$(BUILD_VERSION)' \
-	-X '$(PACKAGE)/cmd.BuildDate=$(BUILD_DATE)' \
-	-X '$(PACKAGE)/cmd.BuildHash=$(BUILD_HASH)' \
-	-X '$(PACKAGE)/cmd.BuildEnvironment=$(BUILD_USER)@$(BUILD_MACHINE)' \
-"
+BUILD_FLAGS=-ldflags "-s -w"
 
 GOFILES=$(shell find . -type f -name '*.go' -not -path "./vendor/*")
 GOPKGS=$(shell go list ./...)
