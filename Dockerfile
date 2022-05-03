@@ -22,7 +22,7 @@ RUN --mount=type=cache,id=go-build,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH make xcbuild
 
 # final stage
-FROM alpine
+FROM scratch
 WORKDIR /app
 COPY --from=build-env --link /go/src/github.com/jkreileder/exporter-merger/merger.yaml /app/
 COPY --from=build-env --link /go/bin/exporter-merger /app/
