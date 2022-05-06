@@ -1,5 +1,7 @@
 .dockerignore
+.pre-commit-config.yaml
 .git
+.gitattributes
 .github
 .gitignore
 Dockerfile
