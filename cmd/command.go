@@ -90,6 +90,10 @@ func (app *App) run(cmd *cobra.Command, args []string) {
 		ExportersHTTPTimeout: app.viper.GetInt("exporterstimeout"),
 	})
 
+	http.HandleFunc("/alive", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("ok"))
+	})
+
 	port := app.viper.GetInt("port")
 	log.Infof("starting HTTP server on port %d", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
