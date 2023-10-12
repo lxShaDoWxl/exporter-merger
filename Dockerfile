@@ -23,4 +23,4 @@ FROM scratch
 WORKDIR /app
 COPY --from=build-env --link /app/exporter-merger/merger.yaml /etc/exporter-merger/config.yaml
 COPY --from=build-env --link /go/bin/exporter-merger /app/
-CMD [ "./exporter-merger" ]
+ENTRYPOINT [ "/app/exporter-merger" ]
