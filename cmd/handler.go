@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"io"
 	"net/http"
 	"sync"
 	"time"
@@ -10,6 +9,13 @@ import (
 	prom "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/expfmt"
 	log "github.com/sirupsen/logrus"
+)
+
+const (
+	contentTypeHeader      = "Content-Type"
+	contentEncodingHeader  = "Content-Encoding"
+	acceptEncodingHeader   = "Accept-Encoding"
+	processStartTimeHeader = "Process-Start-Time-Unix"
 )
 
 type Handler struct {
@@ -22,12 +28,11 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"RequestURI": r.RequestURI,
 		"UserAgent":  r.UserAgent(),
 	}).Debug("handling new request")
-	h.Merge(w)
+	h.Merge(w, r)
 }
 
-func (h Handler) Merge(w io.Writer) {
+func (h Handler) Merge(w http.ResponseWriter, req *http.Request) {
 	mfs := map[string]*prom.MetricFamily{}
-
 	mfMutex := sync.Mutex{}
 	httpClientTimeout := time.Second * time.Duration(h.ExportersHTTPTimeout)
 
@@ -73,7 +78,12 @@ func (h Handler) Merge(w io.Writer) {
 		}(exporter)
 	}
 	wg.Wait()
-	enc := expfmt.NewEncoder(w, expfmt.FmtText)
+	var contentType expfmt.Format
+	contentType = expfmt.Negotiate(req.Header)
+
+	w.Header().Set(contentTypeHeader, string(contentType))
+
+	enc := expfmt.NewEncoder(w, contentType)
 	for mf := range mfs {
 		err := enc.Encode(mfs[mf])
 		if err != nil {
@@ -81,4 +91,12 @@ func (h Handler) Merge(w io.Writer) {
 			return
 		}
 	}
+	if closer, ok := enc.(expfmt.Closer); ok {
+		// This in particular takes care of the final "# EOF\n" line for OpenMetrics.
+		if err := closer.Close(); err != nil {
+			log.Error(err)
+			return
+		}
+	}
+
 }
