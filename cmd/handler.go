@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"sync"
@@ -38,7 +39,12 @@ func (h Handler) Merge(w io.Writer) {
 			url := exporter.URL
 			log.WithField("url", url).Debug("getting remote metrics")
 			httpClient := http.Client{Timeout: httpClientTimeout}
-			resp, err := httpClient.Get(url)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
+			if err != nil {
+				log.WithField("url", url).Errorf("HTTP connection failed: %v", err)
+				return
+			}
+			resp, err := httpClient.Do(req)
 			if err != nil {
 				log.WithField("url", url).Errorf("HTTP connection failed: %v", err)
 				return

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/pkg/errors"
 	prom "github.com/prometheus/client_model/go"
@@ -22,7 +22,7 @@ type Exporter struct {
 func ReadConfig(path string) (*Config, error) {
 	var err error
 
-	raw, err := ioutil.ReadFile(path)
+	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

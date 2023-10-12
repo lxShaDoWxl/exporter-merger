@@ -1,15 +1,17 @@
 package cmd_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"prometheus/exporter-merger/cmd"
 	"reflect"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/prometheus/common/expfmt"
-	"github.com/rebuy-de/exporter-merger/cmd"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -46,9 +48,9 @@ func TestHandler(t *testing.T) {
 		"bar{} 4\nconflict 5\nshared{meh=\"b\"} 6")
 	defer deferrer()
 
-	exporters := []string{
-		te1,
-		te2,
+	exporters := []cmd.Exporter{
+		{URL: te1},
+		{URL: te2},
 	}
 
 	server := httptest.NewServer(cmd.Handler{
@@ -56,7 +58,12 @@ func TestHandler(t *testing.T) {
 	})
 	defer server.Close()
 
-	resp, err := http.Get(server.URL)
+	httpClient := http.Client{Timeout: time.Second * 30}
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, server.URL, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,8 +88,11 @@ func TestHandler(t *testing.T) {
 	// }
 
 	eFmt := new(expfmt.TextParser)
-	part, err := eFmt.TextToMetricFamilies(resp.Body)
 
+	part, err := eFmt.TextToMetricFamilies(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
 	fooWanted := 1.0
 	var foo float64
 
