@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"compress/gzip"
 	"context"
+	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,6 +21,12 @@ const (
 	processStartTimeHeader = "Process-Start-Time-Unix"
 )
 
+var gzipPool = sync.Pool{
+	New: func() interface{} {
+		return gzip.NewWriter(nil)
+	},
+}
+
 type Handler struct {
 	Exporters            []Exporter
 	ExportersHTTPTimeout int
@@ -31,7 +40,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.Merge(w, r)
 }
 
-func (h Handler) Merge(w http.ResponseWriter, req *http.Request) {
+func (h Handler) Merge(rsp http.ResponseWriter, req *http.Request) {
 	mfs := map[string]*prom.MetricFamily{}
 	mfMutex := sync.Mutex{}
 	httpClientTimeout := time.Second * time.Duration(h.ExportersHTTPTimeout)
@@ -80,8 +89,20 @@ func (h Handler) Merge(w http.ResponseWriter, req *http.Request) {
 	wg.Wait()
 	var contentType expfmt.Format
 	contentType = expfmt.Negotiate(req.Header)
+	header := rsp.Header()
+	header.Set(contentTypeHeader, string(contentType))
+	w := io.Writer(rsp)
 
-	w.Header().Set(contentTypeHeader, string(contentType))
+	if gzipAccepted(req.Header) {
+		header.Set(contentEncodingHeader, "gzip")
+		gz := gzipPool.Get().(*gzip.Writer)
+		defer gzipPool.Put(gz)
+
+		gz.Reset(w)
+		defer gz.Close()
+
+		w = gz
+	}
 
 	enc := expfmt.NewEncoder(w, contentType)
 	for mf := range mfs {
@@ -99,4 +120,15 @@ func (h Handler) Merge(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+}
+func gzipAccepted(header http.Header) bool {
+	a := header.Get(acceptEncodingHeader)
+	parts := strings.Split(a, ",")
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "gzip" || strings.HasPrefix(part, "gzip;") {
+			return true
+		}
+	}
+	return false
 }
