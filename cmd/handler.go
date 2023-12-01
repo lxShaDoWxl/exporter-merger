@@ -53,12 +53,15 @@ func (h Handler) Merge(rsp http.ResponseWriter, req *http.Request) {
 			url := exporter.URL
 			log.WithField("url", url).Debug("getting remote metrics")
 			httpClient := http.Client{Timeout: httpClientTimeout}
-			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
+			reqExport, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
 			if err != nil {
 				log.WithField("url", url).Errorf("HTTP connection failed: %v", err)
 				return
 			}
-			resp, err := httpClient.Do(req)
+			for key, val := range exporter.SetHeaders {
+				reqExport.Header.Set(key, val)
+			}
+			resp, err := httpClient.Do(reqExport)
 			if err != nil {
 				log.WithField("url", url).Errorf("HTTP connection failed: %v", err)
 				return

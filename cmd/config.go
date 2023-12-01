@@ -15,8 +15,9 @@ type Config struct {
 }
 
 type Exporter struct {
-	URL       string            `yaml:"url"`
-	AddLabels []*prom.LabelPair `yaml:"addLabels"`
+	URL        string            `yaml:"url"`
+	AddLabels  []*prom.LabelPair `yaml:"addLabels"`
+	SetHeaders map[string]string `yaml:"setHeaders"`
 }
 
 func ReadConfig(path string) (*Config, error) {
